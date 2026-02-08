@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Casino Random</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: radial-gradient(circle at top, #1a1a1a, #000);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    touch-action: none;
+}
+
+/* Фон */
+.background {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.circle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.45;
+    animation: drift linear infinite;
+}
+
+@keyframes drift {
+    from { transform: translateX(-300px); }
+    to { transform: translateX(110vw); }
+}
+
+/* Центр */
+.content {
+    z-index: 1;
+    text-align: center;
+}
+
+/* Glass-кнопка */
+button {
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 18px 44px;
+    font-size: 22px;
+    border-radius: 18px;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+button:active {
+    transform: scale(0.95);
+    background: rgba(255,255,255,0.28);
+}
+
+/* Цифры */
+.number {
+    margin-top: 28px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    font-size: 52px;
+    font-weight: 700;
+    color: white;
+}
+
+.digit {
+    width: 40px;
+}
+</style>
+</head>
+<body>
+
+<div class="background" id="bg"></div>
+
+<div class="content">
+    <button onclick="startCasino()">Начать</button>
+    <div class="number" id="number">
+        <div class="digit">-</div>
+        <div class="digit">-</div>
+        <div class="digit">-</div>
+        <div class="digit">-</div>
+    </div>
+</div>
+
+<script>
+/* КРУГИ */
+const bg = document.getElementById('bg');
+for (let i = 0; i < 20; i++) {
+    const c = document.createElement('div');
+    c.className = 'circle';
+    const size = Math.random() * 260 + 120;
+    c.style.width = size + 'px';
+    c.style.height = size + 'px';
+    c.style.top = Math.random() * 100 + '%';
+    c.style.left = Math.random() * 100 + '%';
+    c.style.background = `hsl(${Math.random()*360},80%,60%)`;
+    c.style.animationDuration = (20 + Math.random()*25) + 's';
+    bg.appendChild(c);
+}
+
+/* ЗВУК */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function tickSound() {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = 800;
+    gain.gain.value = 0.03;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.04);
+}
+
+let rolling = false;
+
+/* КАЗИНО */
+function startCasino() {
+    if (rolling) return;
+    rolling = true;
+
+    audioCtx.resume();
+
+    const digits = document.querySelectorAll('.digit');
+    const finalNumber = String(Math.floor(1000 + Math.random() * 9000));
+    let speed = 40;
+
+    digits.forEach((digit, index) => {
+        let interval = setInterval(() => {
+            digit.textContent = Math.floor(Math.random() * 10);
+            tickSound();
+        }, speed);
+
+        setTimeout(() => {
+            clearInterval(interval);
+            digit.textContent = finalNumber[index];
+        }, 700 + index * 500);
+    });
+
+    setTimeout(() => rolling = false, 3000);
+}
+</script>
+
+</body>
+</html>
